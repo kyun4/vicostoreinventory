@@ -15,34 +15,57 @@
     const username = ref('')
     const filteredUsers = ref([])
     const selectedRow = ref({})
-    const { usersData, productsData, suppliersData } = useDatabase()
+    const { usersData, productsData, suppliersData, supplyRequestsData } = useDatabase()
     const {user, register, login, logout} = useAuth()
+    const supplyRequestDataTemp = ref([])
     const sidebarOpen = ref(true)
     const showInventoryModal = ref(false)
     const showLogoutModal = ref(false)
   
 
+
     const columnDefs = ref([
         { field: 'product_id', headerName: 'ID' },
         { field: 'product_price', headerName: 'Price' },
         { field: 'product', headerName: 'Product Name' },
-        { field: 'current_stocks', headerName: 'Current Stocks' }
+        { field: 'current_stocks', headerName: 'Current Stocks' },
+        { field: 'supply_requests', headerName: 'Supply Request' },
+        { field: 'action', headerName: 'Action', cellRenderer: (params) => {
+            return `<button class = "text-blue-500 hover:text-blue-700">View</button>`
+        }}
     ])
 
+ 
+
     const rowData = ref([
-        { product_id: "1", product_price: "1", product: 'Dairy Butter', current_stocks: 32 },
-        { product_id: "2", product_price: "2", product: 'Robust', current_stocks: 69 }
-    ])
+    
+    ]) // rowData
 
     const defaultColDef = {
         resizable: true,
         flex: 1
-    }
+    } // defaultColDef
 
+ 
+
+ 
     const rowClickEvent  = (event) => {
+
+      
         selectedRow.value = event.data
         showInventoryModal.value = true
+    
+     
     } // rowClickEvent
+
+    const cellClickEvent  = (event) => {
+
+        if(event.column.colId === 'action'){
+            selectedRow.value = event.data
+            showInventoryModal.value = true                      
+        }
+     
+    } // cellClickEvent
 
     function displayUserDetails(userDataGet, email){
 
@@ -62,10 +85,21 @@
             localStorage.setItem('productsData', JSON.stringify(productsData.value))
            
             productsData.value.forEach(item => {
-                rowData.value.push({
-                    product_id: item.product_id,
-                    product_price: item.price !== '' || item.price !== null ? Number(item.  price) : 0,
+                
+                var supplyRequestCount = 0
+                var productId = item.product_id
+
+                if(localStorage.getItem('supply_requests')){
+                    const supplyRequestDataTemp = JSON.parse(localStorage.getItem('supply_requests'))
+                    supplyRequestCount = supplyRequestDataTemp.filter(item => item.product_request == productId).length
+                 }
+
+              
+                rowData.value.push({ 
+                    product_id: productId,
+                    product_price: item.price !== '' || item.price !== null ? Number(item.price) : 0,
                     product: item.product_name,
+                    supply_requests: supplyRequestCount,
                     current_stocks:  item.current_stock !== '' || item.current_stock !== null ? Number(item.current_stock) : 0
                 })
             })
@@ -74,18 +108,33 @@
 
             const productsDataLocalStorage = JSON.parse(localStorage.getItem('productsData'))
 
+                      
+
             productsDataLocalStorage.forEach(item => {
+
+                var supplyRequestCount = 0
+                const productId = item.product_id
+
+                if(localStorage.getItem('supply_requests')){
+                    const supplyRequestDataTemp = JSON.parse(localStorage.getItem('supply_requests'))
+                    supplyRequestCount = supplyRequestDataTemp.filter(item => item.product_request == productId).length
+                }
+              
+
                 rowData.value.push({
-                    product_id: item.product_id,
+                    product_id: productId,
                     product_price: item.price !== '' || item.price !== null ? Number(item.price) : 0,
                     product: item.product_name,
+                    supply_requests: supplyRequestCount !== '' || supplyRequestCount !== nul ? Number(supplyRequestCount) : 0,
                     current_stocks:  item.current_stock !== '' || item.current_stock !== null  ? Number(item.current_stock) : 0
                 })
             })
         }
 
     } // loadProducts
-  
+
+
+
    
 
     const loadUsers = () => {
@@ -114,7 +163,7 @@
 
         if(!localStorage.getItem('suppliers')){
 
-            localStorage.setItem('suppliers', JSON.stringify(suppliersData));
+            localStorage.setItem('suppliers', JSON.stringify(suppliersData.value));
 
         }else{
 
@@ -145,9 +194,9 @@
     onMounted(() => {
 
         if(user != null){
-            loadUsers()
+            loadUsers()             
             loadProducts()
-            loadSuppliers()          
+            loadSuppliers()                
         }else{
             routeManager.push('/login')
         }
@@ -170,7 +219,7 @@
     
 
     <LogoutModals :showLogoutModal = "showLogoutModal" @close = "showLogoutModal = false"></LogoutModals>
-    <InventoryModal :productId = "selectedRow.product_id" :productName = "selectedRow.product" :productPrice = "selectedRow.product_price" :currentStocks = "selectedRow.current_stocks" :showInventoryModal = "showInventoryModal" :supplierArray = "suppliersData" @close = "showInventoryModal = false"></InventoryModal>
+    <InventoryModal :productId = "selectedRow.product_id" :productName = "selectedRow.product" :productPrice = "selectedRow.product_price" :currentStocks = "selectedRow.current_stocks" :showInventoryModal = "showInventoryModal" :supplyRequests = "selectedRow.supply_requests" :supplierArray = "suppliersData" :supplyRequestArray = "supplyRequestsData" @close = "showInventoryModal = false"></InventoryModal>
 
     <div class="grid grid-cols-12">
         
@@ -315,8 +364,18 @@
                         <!-- User menu, notifications, etc. -->
 
                     
-                        <button class="border-2 border-blue-400 text-blue-500 hover:bg-blue-950 hover:text-white hover:border-blue-700 transition-all duration-200 ease-in-out text-sm rounded-full px-5 py-2" @click = "showLogoutModal = true">Logout</button>
-                        <p>Welcome {{ username }}</p>
+                       <div class="flex flex-row items-center">
+
+                            <router-link to = "/profile" class = "rounded-full bg-blue-500 p-1 mr-2" role = "button">
+                                <svg class="h-7 w-7 size-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9A3.75 3.75 0 1 1 8.25 9a3.75 3.75 0 0 1 7.5 0zM4.5 19.5a7.5 7.5 0 0 1 15 0v.75a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-.75z" />
+                                </svg>
+                            </router-link>
+
+                            <p class = "mr-4">Welcome {{ username }}</p>
+                            <button class="border-2 border-blue-400 text-blue-500 hover:bg-blue-950 hover:text-white hover:border-blue-700 transition-all duration-200 ease-in-out text-sm rounded-full px-5 py-2" @click = "showLogoutModal = true">Logout</button>
+                      
+                        </div>
                             
                     </div>
                 </div>
@@ -337,14 +396,14 @@
                         <div class="rounded-lg shadow-lg p-4">
 
                             <ag-grid-vue
-                                class = "w-full"
+                                class = "w-full ag-theme-alpine"
                                 :rowData = "rowData"
                                 :columnDefs = "columnDefs"
-                                :domLayout = "'autoweight'"
+                                :domLayout = "'autoHeight'"
                                 :pagination = "true"
                                 :paginationPageSize = "5"
-                                :defaultColDef = "defaultColDef"
-                                @rowClicked = "rowClickEvent"
+                                :defaultColDef = "defaultColDef" 
+                                @cellClicked = "cellClickEvent"
                             />
 
                         </div>

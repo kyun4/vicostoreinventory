@@ -37,8 +37,7 @@
     ])
 
     const rowDef = ref([
-        { product_id: "1", product: "Butter Milk", product_price: 100, current_stocks: 90, product_url: '' },
-        { product_id: "2", product: "Robust", product_price: 100, current_stocks: 100, product_url: '' }
+      
     ])
 
     const defaultColDef = {
@@ -335,9 +334,20 @@
                     <div class="flex items-center space-x-2 block lg:block max-md:hidden">
                         <!-- User menu, notifications, etc. -->
 
-                    
-                        <button class="border-2 border-blue-400 text-blue-500 hover:bg-blue-950 hover:text-white hover:border-blue-700 transition-all duration-200 ease-in-out text-sm rounded-full px-5 py-2" @click = "showLogoutModal = true">Logout</button>
-                        <p>Welcome {{ username }}</p>
+                        <div class="flex flex-row items-center">
+
+                            <router-link to = "/profile" class = "rounded-full bg-blue-500 p-1 mr-2" role = "button">
+                                <svg class="h-7 w-7 size-1 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9A3.75 3.75 0 1 1 8.25 9a3.75 3.75 0 0 1 7.5 0zM4.5 19.5a7.5 7.5 0 0 1 15 0v.75a.75.75 0 0 1-.75.75H5.25a.75.75 0 0 1-.75-.75v-.75z" />
+                                </svg>
+                            </router-link>
+
+                            <p class = "mr-4">Welcome {{ username }}</p>
+                            <button class="border-2 border-blue-400 text-blue-500 hover:bg-blue-950 hover:text-white hover:border-blue-700 transition-all duration-200 ease-in-out text-sm rounded-full px-5 py-2" @click = "showLogoutModal = true">Logout</button>
+                      
+                        </div>
+                        
+                        
                             
                     </div>
                 </div>

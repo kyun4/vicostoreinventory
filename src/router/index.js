@@ -4,6 +4,7 @@ import Login from '../views/Login.vue'
 import Dashboard from '../views/Dashboard.vue'
 import Products from '../views/Products.vue'
 import Inventory from '../views/Inventory.vue'
+import Profile from '../views/Profile.vue'
 import { useAuth } from '../composables/useAuth'
 
 const routes = [
@@ -54,6 +55,19 @@ const routes = [
            }else{
             next('/login')
            }
+        }
+    },
+    {
+        path: '/profile',
+        name: 'Profile',
+        component: Profile,
+        beforeEnter: (to, from, next) => {
+            const { user } = useAuth()
+            if(user != null){
+                next()
+            } else{
+                next('/login')
+            }
         }
     }
 ]

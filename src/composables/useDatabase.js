@@ -7,6 +7,7 @@ export function useDatabase() {
     const usersData = ref([])
     const productsData = ref([])
     const suppliersData = ref([])
+    const supplyRequestsData = ref([])
 
     onMounted(() => {
        const usersRef = dbRef(db, ("users"))
@@ -38,6 +39,16 @@ export function useDatabase() {
         }
       })
 
+
+      const supplyRequestRef = dbRef(db, ("supply_request"))
+
+      onValue(supplyRequestRef, (snapshot) => {
+        const data = snapshot.val()
+        if(data){
+          supplyRequestsData.value = Object.values(data)
+          localStorage.setItem('supply_requests', JSON.stringify(supplyRequestsData.value))
+        }
+      })
      
 
     })
@@ -49,6 +60,8 @@ export function useDatabase() {
       const supplierItemRef = await dbRef(db, ("supply_request"))
       const newSupplierRef = push(supplierItemRef)
 
+      const keyRequestId = newSupplierRef.key
+
       await set(newSupplierRef, {
         date_time: new Date().toISOString(),
         supplier_id: supplierId,
@@ -57,10 +70,10 @@ export function useDatabase() {
         phone_contacted: '',
         product_request: productId,
         status: '0',
-        supply_request_id: ''
+        supply_request_id: keyRequestId
       })
 
     } // requestStock
 
-    return { usersData, productsData, suppliersData, requestStock }
+    return { usersData, productsData, suppliersData, supplyRequestsData, requestStock }
 }

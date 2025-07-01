@@ -73,7 +73,7 @@
 
     function handleAddStockSubmit(){
 
-        requestStock(productVue.productId,supplier_id.value,added_stocks.value)
+        requestStock(productVue.productId,added_stocks.value,supplier_id.value)
         showAddStocks.value = false
         addStocksLabel.value = "Add Stocks"
         operationStatus.value = "Supply Request Submitted"
